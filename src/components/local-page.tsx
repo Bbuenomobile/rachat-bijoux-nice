@@ -7,118 +7,184 @@ import { site } from '@/lib/site';
 
 export type LocalPageProps = {
   slug: string;
-  cityName: string;
-  context: string;
-  introParagraphs: string[];
-  neighborhoods?: string[];
-  image: string;
+  district: string;
+  postalCode?: string;
+  hero: {
+    eyebrow: string;
+    title: string;
+    titleHighlight?: string;
+    intro: string;
+    image: string;
+    imageAlt: string;
+  };
+  introBlock: {
+    eyebrow?: string;
+    title: string;
+    paragraphs: string[];
+  };
+  highlights: { title: string; desc: string }[];
+  faqs: { q: string; a: string }[];
+  relatedAreas: { label: string; href: string }[];
 };
 
 export function LocalPage(p: LocalPageProps) {
-  const breadcrumb = {
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: p.faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  };
+
+  const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Accueil', item: site.url + '/' },
-      { '@type': 'ListItem', position: 2, name: `Rachat Bijoux ${p.cityName}`, item: site.url + '/' + p.slug },
+      { '@type': 'ListItem', position: 1, name: 'Accueil', item: site.url },
+      { '@type': 'ListItem', position: 2, name: `Rachat Bijoux ${p.district}`, item: `${site.url}/${p.slug}` },
     ],
   };
 
   return (
     <>
-      <section className="relative overflow-hidden bg-[#081a30]">
-        <div className="absolute inset-0 -z-10">
-          <Image src={p.image} alt={`Estimation et rachat de bijoux et diamants à Nice ${p.cityName}`} fill priority sizes="100vw" className="object-cover opacity-35" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#081a30]/90 via-[#081a30]/75 to-[#081a30]" />
-        </div>
-        <div className="container-x pt-24 pb-16 md:pt-32">
-          <nav aria-label="Fil d'Ariane" className="text-sm text-ink-300 mb-5">
-            <ol className="flex flex-wrap items-center gap-1.5">
-              <li><Link href="/" className="hover:text-white">Accueil</Link></li>
-              <li className="text-ink-500">/</li>
-              <li className="text-ink-100">Rachat Bijoux {p.cityName}</li>
-            </ol>
-          </nav>
-          <div className="grid lg:grid-cols-12 gap-10 items-start text-ink-50">
-            <div className="lg:col-span-7">
-              <p className="label text-[#d4af37]">{p.context}</p>
-              <h1 className="h1 mt-4 text-white">Rachat de Bijoux & Estimation à Nice — {p.cityName}</h1>
-              <p className="lead mt-5 text-ink-200">
-                Vous séjournez ou résidez à {p.cityName}, sur la Côte d'Azur ou dans les Alpes-Maritimes et envisagez la vente de diamants certifiés, bijoux d'époque, haute joaillerie signée ou montres de collection ? Nos gemmologues experts vous accueillent en toute discrétion dans nos salons privés du Carré d'Or ou effectuent un déplacement sécurisé directement dans votre villa privée ou suite hôtelière.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/estimation-gratuite" className="btn-gold">Demander une Estimation</Link>
-                <a href={`tel:${site.phone.replace(/\s/g, '')}`} className="btn-outline text-white border-white/30 hover:bg-white/10">{site.phoneDisplay}</a>
+      <Section className="py-16 md:py-24 bg-[#081a30] text-white">
+        <div className="container-x">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7 space-y-6">
+              <span className="label text-[#d4af37]">{p.hero.eyebrow}</span>
+              <h1 className="h1 text-white">
+                {p.hero.title}
+                {p.hero.titleHighlight && (
+                  <span className="block text-[#d4af37] mt-2">{p.hero.titleHighlight}</span>
+                )}
+              </h1>
+              <p className="lead text-ink-200 max-w-2xl">{p.hero.intro}</p>
+              <div className="pt-2 flex flex-wrap gap-4">
+                <Link href="/estimation-gratuite" className="btn-gold py-3 px-8 text-xs uppercase tracking-wider font-semibold">
+                  Demander une Estimation
+                </Link>
+                <a
+                  href={`tel:${site.phone.replace(/\s/g, '')}`}
+                  className="btn-outline border-white/30 text-white hover:bg-white/10 py-3 px-6 text-xs uppercase tracking-wider font-semibold"
+                >
+                  {site.phoneDisplay}
+                </a>
               </div>
             </div>
             <div className="lg:col-span-5">
-              <div className="rounded-2xl bg-white p-6 md:p-8 shadow-2xl">
-                <ContactForm
-                  variant="estimation"
-                  category={`Nice — ${p.cityName}`}
-                  defaultSubject={`Demande d'estimation depuis ${p.cityName}`}
-                  source={`local:${p.slug}`}
-                  headline="Estimation Confidentielle"
-                  intro="Transmettez-nous les détails de vos bijoux pour une première valorisation sous 24 heures."
+              <div className="relative h-[380px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                <Image
+                  src={p.hero.image}
+                  alt={p.hero.imageAlt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  priority
                 />
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </Section>
 
       <TrustBar />
 
       <Section>
-        <div className="grid lg:grid-cols-12 gap-12 items-start">
-          <div className="lg:col-span-7 space-y-6 text-ink-700 leading-relaxed">
-            <SectionHeading
-              eyebrow="Expertise Nice & Côte d'Azur"
-              title={`Conseil Gemmologique & Rachat Direct à ${p.cityName}`}
-            />
-            {p.introParagraphs.map((para, i) => (
-              <p key={i} className="text-base md:text-lg">{para}</p>
+        <div className="container-x max-w-4xl space-y-8">
+          <SectionHeading
+            eyebrow={p.introBlock.eyebrow || `Présence à ${p.district}`}
+            title={p.introBlock.title}
+          />
+          <div className="space-y-4 text-ink-700 leading-relaxed text-base md:text-lg">
+            {p.introBlock.paragraphs.map((para, i) => (
+              <p key={i}>{para}</p>
             ))}
           </div>
-          <div className="lg:col-span-5 space-y-6">
-            <div className="rounded-2xl border border-ink-900/10 bg-ink-50/50 p-6 md:p-8">
-              <h3 className="font-display text-xl text-ink-900 mb-4">Paiement Immédiat & Discrétion Absolue</h3>
-              <p className="text-sm text-ink-600 mb-4">
-                Chaque transaction à {p.cityName} est effectuée directement sur place par virement bancaire instantané en Euros (EUR), accompagnée d'un acte d'achat conforme aux exigences légales françaises.
-              </p>
-              {p.neighborhoods && p.neighborhoods.length > 0 && (
-                <div className="pt-4 border-t border-ink-900/10">
-                  <h4 className="text-xs uppercase tracking-wider font-semibold text-ink-500 mb-3">Secteurs & Quartiers Clés</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {p.neighborhoods.map((nh) => (
-                      <span key={nh} className="inline-block px-2.5 py-1 text-xs rounded-md bg-white border border-ink-900/5 text-ink-700 font-medium">
-                        {nh}
-                      </span>
-                    ))}
-                  </div>
+        </div>
+      </Section>
+
+      <Section className="bg-[#050f1d] text-white">
+        <div className="container-x max-w-5xl">
+          <SectionHeading
+            eyebrow="Excellence & Sécurité"
+            title={`Pourquoi Nous Choisir à ${p.district}`}
+            align="center"
+          />
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {p.highlights.map((item, i) => (
+              <div key={i} className="bg-[#0b1e38] p-6 rounded-2xl border border-white/10 space-y-2 shadow-sm">
+                <div className="text-xs uppercase tracking-wider font-semibold text-[#d4af37]">
+                  Garantie 0{i + 1}
                 </div>
-              )}
+                <h3 className="font-display font-semibold text-lg text-white">{item.title}</h3>
+                <p className="text-sm text-ink-200 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section>
+        <div className="container-x max-w-4xl space-y-8">
+          <SectionHeading
+            eyebrow="Questions Fréquentes"
+            title={`FAQ pour les Résidents de ${p.district}`}
+            align="center"
+          />
+          <div className="space-y-4">
+            {p.faqs.map((faq, i) => (
+              <div key={i} className="bg-ink-50 p-6 rounded-2xl border border-ink-900/10 space-y-2 shadow-sm">
+                <h3 className="font-display font-semibold text-lg text-ink-900">{faq.q}</h3>
+                <p className="text-sm text-ink-600 leading-relaxed">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {p.relatedAreas && p.relatedAreas.length > 0 && (
+        <Section className="bg-ink-50/50 border-t border-ink-900/5">
+          <div className="container-x max-w-4xl text-center space-y-6">
+            <h3 className="font-display text-xl font-semibold text-ink-900">
+              Découvrez Aussi Nos Autres Secteurs à Nice & sur la Côte d'Azur
+            </h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              {p.relatedAreas.map((area, i) => (
+                <Link
+                  key={i}
+                  href={area.href}
+                  className="px-4 py-2 rounded-xl bg-white border border-ink-900/10 text-sm font-medium text-ink-800 hover:border-[#d4af37] hover:text-[#d4af37] transition-colors"
+                >
+                  {area.label}
+                </Link>
+              ))}
             </div>
           </div>
-        </div>
-      </Section>
+        </Section>
+      )}
 
-      <Section className="bg-ink-50">
-        <div className="max-w-4xl mx-auto text-center space-y-4">
-          <h2 className="font-display text-2xl md:text-3xl text-ink-900 font-semibold">
-            Prendre Rendez-vous à Nice ({p.cityName})
-          </h2>
-          <p className="text-ink-600 max-w-2xl mx-auto text-sm md:text-base">
-            Nos gemmologues diplômés sont à votre écoute pour une estimation objective et sans engagement de vos joyaux, diamants et montres de collection.
-          </p>
-          <div className="pt-4 flex flex-wrap justify-center gap-4">
-            <Link href="/estimation-gratuite" className="btn-gold">Demander une Estimation</Link>
-            <Link href="/contact" className="btn-outline">Nos Salons Carré d'Or</Link>
+      <Section className="bg-[#081a30] text-white">
+        <div className="container-x max-w-4xl">
+          <div className="bg-white text-ink-900 rounded-2xl border border-ink-900/10 p-8 md:p-12 shadow-2xl">
+            <ContactForm
+              headline={`Prendre Rendez-vous à Nice — ${p.district}`}
+              source={`local:${p.slug}`}
+              category={`Nice — ${p.district}`}
+            />
           </div>
         </div>
       </Section>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
     </>
   );
 }
